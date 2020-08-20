@@ -1,5 +1,50 @@
+import os
+from urllib.request import urlretrieve
 import tkinter as tk
+import requests
+import jsonpath
 
+
+def song_load(url, title):
+    os.makedirs("音乐下载", exist_ok=True)
+    path = "音乐下载\\{}.mp3".format(title)
+    listbox.insert(tk.END, '歌曲: {}，正在下载...'.format(title))
+    listbox.see(tk.END)
+    listbox.update()
+
+    urlretrieve(url, path)
+
+    listbox.insert(tk.END, '歌曲: {}，下载完毕'.format(title))
+    listbox.see(tk.END)
+    listbox.update()
+
+
+def get_music_name():
+    name = entry.get()
+    headers = {
+        'X-Requested-With': 'XMLHttpRequest'
+    }
+
+    params = {
+        'input': name,
+        'filter': 'name',
+        'type': 'qq',
+        'page': 1,
+    }
+    url = 'http://www.youtap.xin/'
+    resp = requests.post(url, data=params, headers=headers)
+    data = resp.json()
+    title = jsonpath.jsonpath(data, "$..title")[0]
+    author = jsonpath.jsonpath(data, "$..author")[1]
+    url = jsonpath.jsonpath(data, "$..url")[0]
+
+    # print(title)
+    # print(author)
+    # print(url)
+    song_load(url, title)
+
+
+# get_music_name()
 
 mainWindow = tk.Tk()
 
@@ -19,10 +64,10 @@ listbox = tk.Listbox(mainWindow, font=('', 15), width=55, heigh=16)
 listbox.grid(row=1, columnspan=2)
 
 # 下载按钮
-button1 = tk.Button(mainWindow, text='下载', font=('宋体', 15))
+button1 = tk.Button(mainWindow, text='下载', font=('宋体', 15), command=get_music_name)
 button1.grid(row=2, column=0, sticky=tk.W)
 
-button2 = tk.Button(mainWindow, text='退出', font=('宋体', 15))
+button2 = tk.Button(mainWindow, text='退出', font=('宋体', 15), command=mainWindow.quit)
 button2.grid(row=2, column=1, sticky=tk.E)
 
 # 显示界面
